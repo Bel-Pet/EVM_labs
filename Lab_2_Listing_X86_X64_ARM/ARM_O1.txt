@@ -1,0 +1,50 @@
+main:
+        push    {r3, r4, r5, r6, r7, lr}                    @-//-
+        vpush.64        {d8, d9, d10}                       @-//-
+        movs    r4, #2                                      @присваиваем 2 регистру r4 (i)
+        movs    r5, #0                                      @-//-
+        vldr.64 d8, .L5                                     @загружаем в d8 значение по метке (0.01)
+        vmov.f64        d10, d8                             @копируем d8 в d10
+        mov     r6, #37888                                  @присваиваем константу регистру r6 (n = 2000...)
+        movt    r6, 30517                                   @запписывает в верхнее полуслово не затрагивая значение нижнего полуслова
+        mov     r7, r5                                      @копируем r5 в r7
+.L2:
+        vnmul.f64       d9, d8, d10                         @перемножает два регистра и записывает в d9
+        mov     r0, r4                                      @копируем в r0 счетчик
+        mov     r1, r5                                      @копируем верхнюю часть счетчика в r1
+        bl      __aeabi_l2d                                 @переход в подпрограмму куда передантся значение счетчика
+        vmov    d17, r0, r1                                 @присваивает два регистра в d17
+        vdiv.f64        d16, d9, d17                        @делим регистры и записываем результат в d16
+        vadd.f64        d8, d8, d16                         @складываем регистры и записываем резултат в d8
+        adds    r2, r4, #1                                  @добавляем единицу и записываем результат в r2
+        adc     r3, r5, #0                                  @-//-
+        mov     r4, r2                                      @копируем r2 в r4
+        mov     r5, r3                                      @копируем r3 в r5
+        cmp     r3, r7                                      @сравниваем регистры
+        it      eq                                          @смотрим результат выполнения сравнения и определяем дальнейшее выполнение
+        cmpeq   r2, r6                                      @производим дальнейшее сравнение
+        bne     .L2                                         @условный прыжок в .L2
+        vmov.f64        d0, d8                              @копирует зачем не понятно
+        movw    r0, #:lower16:_ZSt4cout                     @-//-
+        movt    r0, #:upper16:_ZSt4cout                     @-//-
+        bl      std::basic_ostream<char, std::char_traits<char> >& std::basic_ostream<char, std::char_traits<char> >::_M_insert<long double>(long double)
+        bl      std::basic_ostream<char, std::char_traits<char> >& std::endl<char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&)
+        movs    r0, #0                                      @-//-
+        vldm    sp!, {d8-d10}                               @-//-
+        pop     {r3, r4, r5, r6, r7, pc}                    @-//-
+.L5:
+        .word   1202590843
+        .word   1065646817
+_GLOBAL__sub_I_main:
+        push    {r4, lr}
+        movw    r4, #:lower16:.LANCHOR0
+        movt    r4, #:upper16:.LANCHOR0
+        mov     r0, r4
+        bl      std::ios_base::Init::Init() [complete object constructor]
+        movw    r2, #:lower16:__dso_handle
+        movt    r2, #:upper16:__dso_handle
+        movw    r1, #:lower16:_ZNSt8ios_base4InitD1Ev
+        movt    r1, #:upper16:_ZNSt8ios_base4InitD1Ev
+        mov     r0, r4
+        bl      __aeabi_atexit
+        pop     {r4, pc}

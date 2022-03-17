@@ -1,0 +1,37 @@
+main:                                                                это кек
+        vldr.64 d0, .L6
+        mov     r2, #37888
+        movt    r2, 30517
+        push    {r3, lr}
+        movs    r3, #2
+        vmov.f64        d19, d0
+.L2:
+        vmov    s15, r3 @ int
+        vnmul.f64       d18, d0, d19
+        adds    r3, r3, #1
+        vcvt.f64.s32    d17, s15
+        cmp     r3, r2
+        vdiv.f64        d16, d18, d17
+        vadd.f64        d0, d0, d16
+        bne     .L2
+        movw    r0, #:lower16:_ZSt4cout
+        movt    r0, #:upper16:_ZSt4cout
+        bl      std::basic_ostream<char, std::char_traits<char> >& std::basic_ostream<char, std::char_traits<char> >::_M_insert<long double>(long double)
+        movs    r0, #0
+        pop     {r3, pc}
+.L6:
+        .word   1202590843
+        .word   1065646817
+_GLOBAL__sub_I_main:
+        push    {r4, lr}
+        movw    r4, #:lower16:.LANCHOR0
+        movt    r4, #:upper16:.LANCHOR0
+        mov     r0, r4
+        bl      std::ios_base::Init::Init() [complete object constructor]
+        mov     r0, r4
+        movw    r2, #:lower16:__dso_handle
+        movt    r2, #:upper16:__dso_handle
+        movw    r1, #:lower16:_ZNSt8ios_base4InitD1Ev
+        movt    r1, #:upper16:_ZNSt8ios_base4InitD1Ev
+        pop     {r4, lr}
+        b       __aeabi_atexit

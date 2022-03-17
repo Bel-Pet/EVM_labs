@@ -1,0 +1,94 @@
+main:
+        push    {r4, r5, r7, lr}                 @сохраняем на стеке значения из регистров r4, r5, r7, lr
+        vpush.64        {d8}                     @сохраняем на стеке регистр d8
+        sub     sp, sp, #32                      @выделили память (sp - 32)
+        add     r7, sp, #0                       @r7 = sp + 0
+        adr     r3, .L5                          @записываем в регистр r3 значение по метке (2000000000)
+        ldrd    r2, [r3]                         @загружаем в r2 = *r3
+        strd    r2, [r7, #8]                     @сохраняем в *[r7-8] = r2 (n)
+        adr     r3, .L5+8                        @записываем в регистр r3 (0.01)
+        ldrd    r2, [r3]                         @загружаем в r2 = *r3
+        strd    r2, [r7]                         @сохраняем в *[r7] = r2 (x)
+        ldrd    r2, [r7]                         @загружаем в r2 = *r7
+        strd    r2, [r7, #24]                    @сохраняем в *[r7 - 24] = r2 (answer)
+        mov     r2, #2                           @присваиваем счетчику 2
+        mov     r3, #0                           @присвавание второму регистру счетчика
+        strd    r2, [r7, #16]                    @сохраяет значение регистра в *[r7 - 16] = r2 (i)
+        b       .L2                              @безусловный прыжок к .L2
+.L3:
+        vldr.64 d16, [r7, #24]                   @загружает по вычиляемому адресу в векторный регистр (answer)
+        vneg.f64        d17, d16                 @вычисляет отрицание и записывает в новый векторный регистр регистр
+        vldr.64 d16, [r7]                        @загружает по вычиляемому адресу в векторный регистр (x)
+        vmul.f64        d8, d17, d16             @перемножает два векторные регистры и записывает результат в d8
+        ldrd    r0, [r7, #16]                    @загружаем в r0 = *[r7 -16]
+        bl      __aeabi_l2d                      @запускается подпрограмма куда передается значение счетчика
+        vmov    d17, r0, r1                      @копирует два вещественных регистра в двухсловный регистр
+        vdiv.f64        d16, d8, d17             @делит регистр d8 на d17 и записывает в d16
+        vldr.64 d17, [r7, #24]                   @загружает в d17 = *[r7 - 24]
+        vadd.f64        d16, d17, d16            @скаладывает два регистра и записывает в d16
+        vstr.64 d16, [r7, #24]                   @сохраняет значение регистра в *[r7 - 24]
+        ldrd    r2, [r7, #16]                    @загружаем в r2 = *[r7 - 16]
+        adds    r4, r2, #1                       @добавляем единицу и сохраняем в r4
+        adc     r5, r3, #0                       @добавляет немедленное значение и значение флага переноса к значению регистра и записывает в r5
+        strd    r4, [r7, #16]                    @сохраняем в *[r7 - 16] = r4
+.L2:
+        ldrd    r0, [r7, #16]                    @загружаем в регистр r0 = *[r7 - 16] (i)
+        ldrd    r2, [r7, #8]                     @загружаем в регистр r2 = *[r7 - 8] (2000000000)
+        cmp     r0, r2                           @сравниваем значения двух регистров обновляя флаги и отбрасывая результат
+        sbcs    r3, r1, r3                       @вычитание и запись в регистр назначения
+        blt     .L3                              @условный прыжок на .L3 (в цикл)
+        vldr.64 d0, [r7, #24]                                                               @начало работы с функцией вывода
+        movw    r0, #:lower16:_ZSt4cout                                                     @запись выводимого на экран значения
+        movt    r0, #:upper16:_ZSt4cout                                                     @запись в верхнее полуслово регистра
+        bl      std::basic_ostream<char, std::char_traits<char> >::operator<<(long double)  @переходим в подпрограмму вывода
+        mov     r3, r0                                                                      @присваиваем значение регистра  r0 регистру r3
+        movw    r1, #:lower16:_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_    @как-то работает перенос строки
+        movt    r1, #:upper16:_ZSt4endlIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_    @-//-
+        mov     r0, r3                                                                      @-//-
+        bl      std::basic_ostream<char, std::char_traits<char> >::operator<<(std::basic_ostream<char, std::char_traits<char> >& (*)(std::basic_ostream<char, std::char_traits<char> >&))
+        movs    r3, #0                                                                      @производит махинации для завершения программы
+        mov     r0, r3                                                                      @-//-
+        adds    r7, r7, #32                                                                 @-//-
+        mov     sp, r7                                                                      @-//-
+        vldm    sp!, {d8}                                                                   @-//-(загружает последовательность вещественных регистров)
+        pop     {r4, r5, r7, pc}                                                            @пушимся в стек программы
+.L5:
+        .word   2000000000
+        .word   0
+        .word   1202590843
+        .word   1065646817
+__static_initialization_and_destruction_0(int, int):
+        push    {r7, lr}
+        sub     sp, sp, #8
+        add     r7, sp, #0
+        str     r0, [r7, #4]
+        str     r1, [r7]
+        ldr     r3, [r7, #4]
+        cmp     r3, #1
+        bne     .L9
+        ldr     r3, [r7]
+        movw    r2, #65535
+        cmp     r3, r2
+        bne     .L9
+        movw    r0, #:lower16:_ZStL8__ioinit
+        movt    r0, #:upper16:_ZStL8__ioinit
+        bl      std::ios_base::Init::Init() [complete object constructor]
+        movw    r2, #:lower16:__dso_handle
+        movt    r2, #:upper16:__dso_handle
+        movw    r1, #:lower16:_ZNSt8ios_base4InitD1Ev
+        movt    r1, #:upper16:_ZNSt8ios_base4InitD1Ev
+        movw    r0, #:lower16:_ZStL8__ioinit
+        movt    r0, #:upper16:_ZStL8__ioinit
+        bl      __aeabi_atexit
+.L9:
+        nop
+        adds    r7, r7, #8
+        mov     sp, r7
+        pop     {r7, pc}
+_GLOBAL__sub_I_main:
+        push    {r7, lr}
+        add     r7, sp, #0
+        movw    r1, #65535
+        movs    r0, #1
+        bl      __static_initialization_and_destruction_0(int, int)
+        pop     {r7, pc}
